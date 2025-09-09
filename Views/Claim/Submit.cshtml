@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "Submit Claim";
+}
+
+<h2>Submit Your Monthly Claim</h2>
+
+<p>As a lecturer, you can submit your claim with a single click after uploading documents.</p>
+
+<form method="post" enctype="multipart/form-data">
+    <!-- Placeholder, not functional -->
+    <div class="form-group">
+        <label for="lecturerName">Lecturer Name</label>
+        <input type="text" class="form-control" id="lecturerName" placeholder="Enter your full name">
+    </div>
+    <div class="form-group">
+        <label for="claimMonth">Claim Month</label>
+        <input type="month" class="form-control" id="claimMonth" placeholder="Select claim month">
+    </div>
+    <div class="form-group">
+        <label for="amount">Amount</label>
+        <input type="number" class="form-control" id="amount" placeholder="Enter claim amount" step="0.01" min="0">
+    </div>
+    <div class="form-group">
+        <label for="claimDetails">Claim Details</label>
+        <textarea class="form-control" id="claimDetails" rows="3" placeholder="Enter claim details"></textarea>
+    </div>
+    <div class="form-group">
+        <label for="supportingDocuments">Upload Supporting Documents</label>
+        <input type="file" class="form-control-file" id="supportingDocuments" multiple>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Claim</button>
+</form>
