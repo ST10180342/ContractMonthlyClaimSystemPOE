@@ -17,8 +17,14 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Claim" asp-action="Submit">Submit Claim</a>
+                            <a class="nav-link text-dark" asp-controller="Claims" asp-action="Submit">Submit Claim</a>
                         </li>
+                        @if (User.IsInRole("Coordinator") || User.IsInRole("Manager"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Claims" asp-action="PendingClaims">Review Claims</a>
+                            </li>
+                        }
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Claim" asp-action="Verify">Verify Claims</a>
                         </li>
@@ -27,6 +33,10 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Claim" asp-action="Track">Track Status</a>
+                        </li>
+                        <!-- NEW LOGIN LINK: Added here as the last item -->
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
                         </li>
                     </ul>
                 </div>

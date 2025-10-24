@@ -1,13 +1,32 @@
-﻿namespace ContractMonthlyClaimSystem.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ContractMonthlyClaimSystemPOE.Models
 {
     public class Claim
     {
         public int Id { get; set; }
-        public int UserId { get; set; }
-        public DateTime SubmissionDate { get; set; }
-        public string Status { get; set; } // e.g., Submitted, Verified, Approved, Settled
+
+        [Required]
+        public string LecturerId { get; set; } = string.Empty;
+
+        [Required]
+        [Range(0.1, double.MaxValue, ErrorMessage = "Hours must be greater than 0.")]
         public double HoursWorked { get; set; }
+
+        [Required]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Rate must be greater than 0.")]
         public decimal HourlyRate { get; set; }
-        public List<string> SupportingDocuments { get; set; }
+
+        public string? Notes { get; set; }
+
+        public string? FilePath { get; set; }
+        public string? FileName { get; set; }
+
+        [Required]
+        public string Status { get; set; } = "Pending";
+
+        public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
+
+        public virtual ApplicationUser? Lecturer { get; set; }
     }
 }

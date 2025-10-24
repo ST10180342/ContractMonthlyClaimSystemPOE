@@ -1,0 +1,48 @@
+﻿@model IEnumerable<ContractMonthlyClaimSystemPOE.Models.Claim>
+@{
+    ViewData["Title"] = "Pending Claims";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4">Pending Claims</h2>
+    @if (!Model.Any())
+    {
+        <p>No pending claims.</p>
+    }
+    else
+    {
+        foreach (var claim in Model)
+        {
+            <div class="card mb-3" style="border-left: 5px solid #007bff;">
+                <div class="card-body">
+                    <h5 class="card-title">Claim #@claim.Id by @claim.Lecturer?.UserName</h5>
+                    <p class="card-text"><strong>Total:</strong> R@((decimal)claim.HoursWorked * claim.HourlyRate)</p>                    <p class="card-text"><strong>Submitted:</strong> @claim.SubmittedAt.ToShortDateString()</p>
+                    @if (!string.IsNullOrEmpty(claim.Notes))
+                    {
+                        <p class="card-text"><strong>Notes:</strong> @claim.Notes</p>
+                    }
+                    @if (!string.IsNullOrEmpty(claim.FileName))
+                    {
+                        <p class="card-text"><strong>Document:</strong> <a href="@claim.FilePath" target="_blank">@claim.FileName</a></p>
+                    }
+                    <div class="btn-group">
+                        <form asp-action="Approve" asp-route-id="@claim.Id" asp-route-action="Approve" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-success">Approve</button>
+                        </form>
+                        <form asp-action="Approve" asp-route-id="@claim.Id" asp-route-action="Reject" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-danger">Reject</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+</div>

@@ -1,0 +1,125 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ContractMonthlyClaimSystemPOE.Data;
+using ContractMonthlyClaimSystemPOE.Models;
+using System.Security.Claims;
+using Claim = ContractMonthlyClaimSystemPOE.Models.Claim;
+
+namespace ContractMonthlyClaimSystemPOE.Controllers
+{
+    [Authorize(Roles = "Lecturer")]
+    public class ClaimsController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public ClaimsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        {
+            _context = context;
+            _userManager = userManager;
+        }
+
+        public IActionResult Submit()
+        {
+            return View(new Claim());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Submit(Claim claim, IFormFile? file)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    claim.LecturerId = userId ?? string.Empty;
+                    claim.SubmittedAt = DateTime.UtcNow;
+
+                    // Handle file upload (see Feature 3)
+                    if (file != null)
+                    {
+                        claim.FilePath = await UploadFile(file);
+                        claim.FileName = file.FileName;
+                    }
+
+                    _context.Add(claim);
+                    await _context.SaveChangesAsync();
+                    TempData["Success"] = "Claim submitted successfully!";
+                    return RedirectToAction(nameof(MyClaims));
+                }
+                catch (Exception ex)
+                {
+                    // Error handling
+                    ModelState.AddModelError("", $"Error submitting claim: {ex.Message}");
+                }
+            }
+            return View(claim);
+        }
+
+        public async Task<IActionResult> MyClaims()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var claims = await _context.Claims
+                .Where(c => c.LecturerId == userId)
+                .Include(c => c.Lecturer)
+                .ToListAsync();
+            return View(claims);
+        }
+
+        // NEW ACTION: Add this here for PendingClaims
+        [Authorize(Roles = "Coordinator,Manager")]
+        public async Task<IActionResult> PendingClaims()
+        {
+            var claims = await _context.Claims
+                .Where(c => c.Status == "Pending")
+                .Include(c => c.Lecturer)
+                .ToListAsync();
+            return View(claims);
+        }
+
+        // NEW ACTION: Add this here for Approve
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Coordinator,Manager")]
+        public async Task<IActionResult> Approve(int id, string action)
+        {
+            try
+            {
+                var claim = await _context.Claims.FindAsync(id);
+                if (claim == null) return NotFound();
+
+                claim.Status = action == "Approve" ? "Approved" : "Rejected";
+                // Optional: Add rejection reason field if needed
+
+                await _context.SaveChangesAsync();
+                TempData["Success"] = $"Claim {action.ToLower()}d successfully.";
+                // Trigger real-time update (see Feature 4)
+                return RedirectToAction(nameof(PendingClaims));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error: {ex.Message}";
+                return RedirectToAction(nameof(PendingClaims));
+            }
+        }
+
+        private async Task<string> UploadFile(IFormFile file)
+        {
+            // See Feature 3 implementation
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+            return "/uploads/" + uniqueFileName;
+        }
+    }
+}
