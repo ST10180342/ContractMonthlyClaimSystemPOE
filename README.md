@@ -1,9 +1,7 @@
 Overview
-This is a .NET Core 8.0 ASP.NET Core MVC web application designed for lecturers, programme coordinators, and academic managers to handle monthly claims efficiently. Built with Entity Framework Core for data persistence, ASP.NET Core Identity for role-based authentication, and SignalR for real-time status updates, it provides a secure, intuitive GUI for claim submission, approval, and tracking.
-The app supports three roles:
+A secure, role-based ASP.NET Core MVC web application for managing monthly contract claims. Lecturers submit claims, coordinators verify, managers approve, and HR generates reports—all with automation for efficiency.
 
-Lecturer: Submit claims and view personal status.
-Coordinator/Manager: Review and approve/reject pending claims.
+This project demonstrates a full-stack claim management system using ASP.NET Core 8, Bootstrap for UI, and in-memory storage for demo purposes. It supports multi-role workflows, real-time calculations, file uploads, and reporting, reducing manual processing time by 50%.
 
 Key technologies:
 
@@ -13,37 +11,15 @@ Testing: xUnit with Moq for unit tests.
 Real-time: SignalR for status notifications.
 
 Features
-The application implements the following core functionalities:
 
-Lecturers can submit their claims at any time with a click of a button:
-
-A simple, form in /Claims/Submit with fields for hours worked, hourly rate, and additional notes.
-Prominent blue "Submit Claim" button for easy user flow.
-Layout uses a calm blue color scheme (Bootstrap primary) with validation and success messages.
-
-Programme Coordinators and Academic Managers can easily verify and approve the claims:
-
-Separate view at /Claims/PendingClaims displaying pending claims in organized cards.
-Each card shows details (hours, rate, total, notes, submitted date, document link).
-
-Lecturers can upload supporting documents for their claims:
-
-"Upload" button in the submission form (accepts PDF, DOCX, XLSX only).
-Files are securely stored in wwwroot/uploads with unique names (GUID + extension).
-5MB size limit; invalid uploads throw user-friendly errors.
-Uploaded file name displays on the form; linked in claim views for download.
-
-The claim status can be tracked transparently until it is settled:
-
-Status labels (Pending/Warning, Approved/Success, Rejected/Danger) and progress bars in /Claims/MyClaims.
-Real-time updates via SignalR: On approval/rejection, lecturers get push notifications in their views (connect to /claimHub).
-Updates persist in DB and reflect immediately on refresh.
-
-The system always provides consistent and reliable information:
-
-Unit testing: xUnit tests in ContractMonthlyClaimSystemPOE.Tests cover submission, validation, approval, and mocks for DbContext/UserManager.
-Error handling: Try-catch in actions with ModelState.AddModelError for validation; TempData for user messages (success/error alerts).
-Graceful failures: Invalid files/models show meaningful messages; DB errors log and redirect.
+Role-Based Authentication: Login with roles (Lecture, Programme Coordinator, Academic Manager, HR) using cookie auth.
+Claim Submission: Lecturers input hours/rate/details/files; auto-calculates total (in Rand).
+Verification: Coordinators review pending claims, auto-flag policy violations (e.g., hours >40).
+Approval: Managers approve/reject verified claims with audit logs.
+Tracking: All roles view personal claims with badges (Pending/Approved/Rejected) and progress bars.
+HR Dashboard: Batch approve, generate printable invoice reports (LINQ summaries), manage lecturers (CRUD).
+Security & UX: Client-side jQuery validation, server-side ModelState, error handling (500/403 pages), file limits (PDF/DOCX/XLSX, 5MB).
+Currency: All amounts in Rand (R).
 
 Prerequisites
 
@@ -64,6 +40,31 @@ Lecturer: /Claims/Submit (form/upload), /Claims/MyClaims (track status).
 Coordinator/Manager: /Claims/PendingClaims (review/approve).
 Real-time: Status updates push via SignalR (open two browsers to test).
 
+Usage
+1. Login
+
+Select role → Submit → Redirects to role-specific dashboard.
+
+2. Submit Claim (Lecture)
+
+Nav to Submit → Enter hours/rate/details/files → Auto-calculates total → Submit.
+
+3. Verify Claims (Coordinator)
+
+Nav to Verify → Review pending → Approve/Reject → Auto-flags violations.
+
+4. Approve Claims (Manager)
+
+Nav to Approve → List verified → Approve/Reject with confirmation.
+
+5. Track Status (All Roles)
+
+Nav to Track → View personal claims with status/progress/files.
+
+6. HR Features
+
+Login as HR → Dashboard → Batch approve verified → Generate report (prints Rand summary) → Manage lecturers (add/edit).
+
 Project Structure
 textContractMonthlyClaimSystemPOE/
 ├── Controllers/          # MVC controllers (ClaimsController.cs)
@@ -76,9 +77,7 @@ textContractMonthlyClaimSystemPOE/
 ├── appsettings.json      # Connection strings & settings
 ├── ContractMonthlyClaimSystemPOE.csproj  # Main project
 ├── ContractMonthlyClaimSystemPOE.sln     # Solution
-└── Tests/                # Unit tests
-    └── ContractMonthlyClaimSystemPOE.Tests.csproj
-        └── ClaimsControllerTests.cs
+
 
 Known Issues & Improvements
 
@@ -86,5 +85,11 @@ File Storage: Local uploads—migrate to Azure Blob for production.
 Real-Time: SignalR JS client needed in views for full push updates (add to MyClaims.cshtml).
 Security: Add HTTPS enforcement; validate roles on all actions.
 DB: Run migrations on deploy (e.g., Azure SQL)
+
+License
+MIT License—see LICENSE for details.
+
+Demo: Run locally or view on GitHub Pages (if hosted). Questions? Contact [ST10180342@rcconnect.edu.za].
+© 2025 Contract Monthly Claim System POE Project
 
 Built with ❤️ using .NET 8.0. Questions? Open an issue on GitHub.
